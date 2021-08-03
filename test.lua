@@ -1,16 +1,14 @@
-print(2 / 2)
+local ma = require "matrixAlgebra"
 
-local ma = require("matrixAlgebra")
+local id1 = ma.liSparseMatrix.identity(3)
+local id2 = ma.liSparseMatrix.identity(3)
 
-local id = ma.sparseMatrix.identity(3)
-local rand = ma.sparseMatrix.random(2,3,-1,1)
-local randT = ma.sparseMatrix.transpose(rand)
-local randSquare = ma.sparseMatrix.random(3,3,-1,1)
-local lu = ma.sparseMatrix.lu(randSquare)
-local ones = ma.sparseMatrix.new({{1,1},{1,1}})
-local luOnes = ma.sparseMatrix.lu(ones * ones)
-local cornerOnes = ma.sparseMatrix.new({{1,1,0},{1,1,0},{0,0,0}})
-local luCornerOnes = ma.sparseMatrix.lu(cornerOnes)
+local rand = ma.liSparseMatrix.random(6,6,-1,1)
+local inverse = ma.liSparseMatrix.inverse(rand)
+local id4 = ma.liSparseMatrix.sparsify(inverse * rand, 0.000000000001)
 
-print(luCornerOnes[1])
+local id3 = ma.liSparseMatrix.unflatten(id1)
+
+local twoid = id1 + id2
+local zero = id1 - id2
 

@@ -1,12 +1,12 @@
 local matrixAlgebra = {}
 
-local _sparseMatrix = {}
+local _linearlyIndexedSparseMatrix = {}
 
-local _sparseMatrixFromTableOfTables = function (tableOfTables)
+local _linearlyIndexedSparseMatrixFromTableOfTables = function (tableOfTables)
     local numberOfRows = #tableOfTables
     local numberOfColumns = #tableOfTables[1]
 
-    local sparseForm = setmetatable({}, _sparseMatrix)
+    local sparseForm = setmetatable({}, _linearlyIndexedSparseMatrix)
 
     for i = 1, numberOfRows do
         local rowConstant = numberOfColumns * (i - 1)
@@ -17,18 +17,18 @@ local _sparseMatrixFromTableOfTables = function (tableOfTables)
         end
     end
 
-    rawset(sparseForm, "_dimensions", {numberOfRows, numberOfColumns})
+    rawset(sparseForm, "dimensions", {numberOfRows, numberOfColumns})
 
     return sparseForm
 end
 
-local _sparseMatrixFromNumericTableOfTables = function (tableOfTables, tol)
+local _linearlyIndexedSparseMatrixFromNumericTableOfTables = function (tableOfTables, tol)
     tol = tol or 0
 
     local numberOfRows = #tableOfTables
     local numberOfColumns = #tableOfTables[1]
 
-    local sparseForm = setmetatable({}, _sparseMatrix)
+    local sparseForm = setmetatable({}, _linearlyIndexedSparseMatrix)
 
     for i = 1, numberOfRows do
         local rowConstant = numberOfColumns * (i - 1)
@@ -39,15 +39,15 @@ local _sparseMatrixFromNumericTableOfTables = function (tableOfTables, tol)
         end
     end
 
-    rawset(sparseForm, "_dimensions", {numberOfRows, numberOfColumns})
+    rawset(sparseForm, "dimensions", {numberOfRows, numberOfColumns})
 
     return sparseForm
 end
 
-local _sparseCopy = function (matrix)
-    local copy = setmetatable({}, _sparseMatrix)
+local _linearlyIndexedSparseCopy = function (matrix)
+    local copy = setmetatable({}, _linearlyIndexedSparseMatrix)
 
-    rawset(copy, "_dimensions", {matrix._dimensions[1], matrix._dimensions[2]})
+    rawset(copy, "dimensions", {matrix.dimensions[1], matrix.dimensions[2]})
 
     for k, v in pairs(matrix) do
         if type(k) == "number" then
@@ -58,10 +58,10 @@ local _sparseCopy = function (matrix)
     return copy
 end
 
-local _sparseIdentity = function (n)
-    local result = setmetatable({}, _sparseMatrix)
+local _linearlyIndexedSparseIdentity = function (n)
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
 
-    rawset(result, "_dimensions", {n, n})
+    rawset(result, "dimensions", {n, n})
 
     for i = 1, n do
         result[n * (i - 1) + i] = 1
@@ -70,20 +70,20 @@ local _sparseIdentity = function (n)
     return result
 end
 
-local _sparseZero = function (n, m)
-    local result = setmetatable({}, _sparseMatrix)
+local _linearlyIndexedSparseZero = function (n, m)
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
 
-    rawset(result, "_dimensions", {n,m})
+    rawset(result, "dimensions", {n,m})
 
     return result
 end
 
-local _sparseRandom = function (n, m, a, b, tol)
+local _linearlyIndexedSparseRandom = function (n, m, a, b, tol)
     tol = tol or 0
 
-    local result = setmetatable({}, _sparseMatrix)
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
 
-    rawset(result, "_dimensions", {n, m})
+    rawset(result, "dimensions", {n, m})
 
     for i = 1, n do
         local rowConstant = m * (i - 1)
@@ -98,9 +98,9 @@ local _sparseRandom = function (n, m, a, b, tol)
     return result
 end
 
-local _sparseColumnSwap = function (matrix, n, m)
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+local _linearlyIndexedSparseColumnSwap = function (matrix, n, m)
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
 
     for i = 1, numberOfRows do
         local rowConstant = numberOfColumns * (i - 1)
@@ -110,22 +110,22 @@ local _sparseColumnSwap = function (matrix, n, m)
     return matrix
 end
 
-local _sparseRightPermutationMatrix = function (n, permutations)
-    local result = _sparseIdentity(n)
+local _linearlyIndexedSparseRightPermutationMatrix = function (n, permutations)
+    local result = _linearlyIndexedSparseIdentity(n)
 
     for i = 1, n do
         local destination = permutations[i]
         if destination ~= nil then
-            result = _sparseColumnSwap(result, i, destination)
+            result = _linearlyIndexedSparseColumnSwap(result, i, destination)
         end
     end
 
     return result
 end
 
-local _sparseRowSwap = function (matrix, n, m)
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+local _linearlyIndexedSparseRowSwap = function (matrix, n, m)
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
 
     for i = 1, numberOfColumns do
         local rowConstant = numberOfColumns * (n - 1)
@@ -136,23 +136,23 @@ local _sparseRowSwap = function (matrix, n, m)
     return matrix
 end
 
-local _sparsePermutationMatrix = function (n, permutations)
-    local result = _sparseIdentity(n)
+local _linearlyIndexedSparsePermutationMatrix = function (n, permutations)
+    local result = _linearlyIndexedSparseIdentity(n)
 
     for i = 1, n do
         local destination = permutations[i]
         if destination ~= nil then
-            result = _sparseRowSwap(result, i, destination)
+            result = _linearlyIndexedSparseRowSwap(result, i, destination)
         end
     end
 
     return result
 end
 
-local _sparseShear = function (matrix, n, m, c, tol)
+local _linearlyIndexedSparseShear = function (matrix, n, m, c, tol)
     tol = tol or 0
 
-    local numberOfColumns = matrix._dimensions[2]
+    local numberOfColumns = matrix.dimensions[2]
 
     for i = 1, numberOfColumns do
         local val1 = matrix[numberOfColumns * (n - 1) + i]
@@ -177,10 +177,10 @@ local _sparseShear = function (matrix, n, m, c, tol)
     return matrix
 end
 
-local _sparseRowAdd = function (matrix, row, n, c, tol)
+local _linearlyIndexedSparseRowAdd = function (matrix, row, n, c, tol)
     tol = tol or 0
 
-    local numberOfColumns = matrix._dimensions[2]
+    local numberOfColumns = matrix.dimensions[2]
 
     for i = 1, numberOfColumns do
         local val1 = matrix[numberOfColumns * (n - 1) + i]
@@ -205,13 +205,13 @@ local _sparseRowAdd = function (matrix, row, n, c, tol)
     return matrix
 end
 
-local _sparseTranspose = function (matrix)
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+local _linearlyIndexedSparseTranspose = function (matrix)
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
 
-    local result = setmetatable({}, _sparseMatrix)
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
 
-    rawset(result, "_dimensions", {numberOfColumns, numberOfRows})
+    rawset(result, "dimensions", {numberOfColumns, numberOfRows})
 
     for k, v in pairs(matrix) do
         if type(k) == "number" then
@@ -227,14 +227,14 @@ local _sparseTranspose = function (matrix)
     return result
 end
 
-local _sparseColumnMax = function (matrix, n, m)
-    local numberOfColumns = matrix._dimensions[2]
-    local numberOfRows = matrix._dimensions[1]
+local _linearlyIndexedSparseColumnMax = function (matrix, n, m)
+    local numberOfColumns = matrix.dimensions[2]
+    local numberOfRows = matrix.dimensions[1]
 
     local max = 0
     local maxRow = 1
 
-    if matrix._dimensions[1] > #matrix - m - 1 then
+    if matrix.dimensions[1] > #matrix - m - 1 then
         for k, v in pairs(matrix) do
             if type(k) == "number" and k > m * numberOfColumns and (k - n) % numberOfColumns == 0 and v > max then
                 max = v
@@ -248,9 +248,9 @@ local _sparseColumnMax = function (matrix, n, m)
     end
 end
 
-local _sparseLU = function (matrix)
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+local _linearlyIndexedSparseLU = function (matrix)
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
 
     if numberOfRows ~= numberOfColumns then
         error("Cannot compute LU of sparse rectangular matrix.")
@@ -258,7 +258,7 @@ local _sparseLU = function (matrix)
 
     local permuations = {}
 
-    local l = _sparseIdentity(numberOfRows)
+    local l = _linearlyIndexedSparseIdentity(numberOfRows)
 
     for i = 1, numberOfColumns - 1 do
         local maxRow = i
@@ -273,14 +273,15 @@ local _sparseLU = function (matrix)
             end
         end
 
-        print(matrix)
-
         if max == 0 then
             error("Sparse matrix is not invertible")
         end
 
         if maxRow ~= i then
-            _sparseRowSwap(matrix, i, maxRow)
+            _linearlyIndexedSparseRowSwap(matrix, i, maxRow)
+            for k = 1, i - 1 do
+                l[numberOfColumns * (i - 1) + k], l[numberOfColumns * (maxRow - 1) + k] = l[numberOfColumns * (maxRow - 1) + k], l[numberOfColumns * (i - 1) + k]
+            end
             permuations[i] = maxRow
         end
 
@@ -288,46 +289,45 @@ local _sparseLU = function (matrix)
 
         for j = i + 1, numberOfRows do
             local val = matrix[numberOfColumns * (j - 1) + i]
-            local valOverMax = val / max
             if val ~= nil then
+                local valOverMax = val / max
                 l[numberOfColumns * (j - 1) + i] = valOverMax
-            end
-            matrix[numberOfColumns * (j - 1) + i] = nil
-            for k = i + 1, numberOfColumns do
-                local val1 = matrix[numberOfColumns * (j - 1) + k]
-                local val2 = matrix[numberOfColumns * (i - 1) + k]
-                if val1 ~= nil and val2 ~= nil then
-                    matrix[numberOfColumns * (j - 1) + k] = val1 - val2 * valOverMax
-                elseif val2 ~= nil then
-                    matrix[numberOfColumns * (j - 1) + k] = -val2 * valOverMax
+                matrix[numberOfColumns * (j - 1) + i] = nil
+                for k = i + 1, numberOfColumns do
+                    local val1 = matrix[numberOfColumns * (j - 1) + k]
+                    local val2 = matrix[numberOfColumns * (i - 1) + k]
+                    if val1 ~= nil and val2 ~= nil then
+                        matrix[numberOfColumns * (j - 1) + k] = val1 - val2 * valOverMax
+                    elseif val2 ~= nil then
+                        matrix[numberOfColumns * (j - 1) + k] = -val2 * valOverMax
+                    end
                 end
             end
         end
     end
 
-    local permuationMatrix = _sparsePermutationMatrix(numberOfRows, permuations)
+    local permuationMatrix = _linearlyIndexedSparsePermutationMatrix(numberOfRows, permuations)
 
     return {l, matrix, permuationMatrix}
 end
 
-local _sparseInverse = function (matrix)
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+local _linearlyIndexedSparseInverse = function (matrix)
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
 
     if numberOfRows ~= numberOfColumns then
         error("Cannot compute inverse of sparse rectangular matrix.")
     end
 
-    local permuations = {}
-
-    local result = _sparseIdentity(numberOfRows)
+    local result = _linearlyIndexedSparseIdentity(numberOfRows)
 
     for i = 1, numberOfColumns - 1 do
         local maxRow = i
         local max = matrix[numberOfColumns * (i - 1) + i] or 0
 
         for j = i, numberOfRows do
-            local maxCandidate = math.abs(matrix[numberOfColumns * (j - 1) + i])
+            local maxCandidate = matrix[numberOfColumns * (j - 1) + i] or 0
+            maxCandidate = math.abs(maxCandidate)
             if maxCandidate ~= nil and maxCandidate > max then
                 max = maxCandidate
                 maxRow = j
@@ -339,30 +339,26 @@ local _sparseInverse = function (matrix)
         end
 
         if maxRow ~= i then
-            _sparseRowSwap(matrix, i, maxRow)
-            permuations[i] = maxRow
+            _linearlyIndexedSparseRowSwap(matrix, i, maxRow)
+            _linearlyIndexedSparseRowSwap(result, i, maxRow)
         end
 
         max = matrix[numberOfColumns * (i - 1) + i]
 
         for j = i + 1, numberOfRows do
             local val = matrix[numberOfColumns * (j - 1) + i]
-            local valOverMax = val / max
-            matrix[numberOfColumns * (j - 1) + i] = nil
-            for k = i + 1, numberOfColumns do
-                local val1 = matrix[numberOfColumns * (j - 1) + k]
-                local val2 = matrix[numberOfColumns * (i - 1) + k]
-                if val1 ~= nil and val2 ~= nil then
-                    matrix[numberOfColumns * (j - 1) + k] = val1 - val2 * valOverMax
-                elseif val2 ~= nil then
-                    matrix[numberOfColumns * (j - 1) + k] = -val2 * valOverMax
-                end
-                val1 = result[numberOfColumns * (j - 1) + k]
-                val2 = result[numberOfColumns * (i - 1) + k]
-                if val1 ~= nil and val2 ~= nil then
-                    result[numberOfColumns * (j - 1) + k] = val1 - val2 * valOverMax
-                elseif val2 ~= nil then
-                    result[numberOfColumns * (j - 1) + k] = -val2 * valOverMax
+            if val ~= nil then
+                local valOverMax = val / max
+                matrix[numberOfColumns * (j - 1) + i] = nil
+                _linearlyIndexedSparseShear(result, i, j, -valOverMax)
+                for k = i + 1, numberOfColumns do
+                    local val1 = matrix[numberOfColumns * (j - 1) + k]
+                    local val2 = matrix[numberOfColumns * (i - 1) + k]
+                    if val1 ~= nil and val2 ~= nil then
+                        matrix[numberOfColumns * (j - 1) + k] = val1 - val2 * valOverMax
+                    elseif val2 ~= nil then
+                        matrix[numberOfColumns * (j - 1) + k] = -val2 * valOverMax
+                    end
                 end
             end
         end
@@ -371,106 +367,326 @@ local _sparseInverse = function (matrix)
     for i = numberOfRows, 1, -1 do
         local rowConstant = numberOfColumns * (i - 1)
         local val = matrix[rowConstant + i]
-        for j = 1, numberOfRows - 1 do
-            local val1 = matrix[numberOfColumns * (i - j - 1)]
+        for j = 1, i - 1 do
+            local val1 = matrix[numberOfColumns * (i - j - 1) + i]
             if val1 ~= nil then
-                _sparseShear(result, i, i - j, val1 / val)
+                _linearlyIndexedSparseShear(result, i, i - j, -val1 / val)
             end
         end
+        for j = 1, numberOfColumns do
+            result[rowConstant + j] = result[rowConstant + j] / val
+        end
     end
-
-    local permuationMatrix = _sparsePermutationMatrix(numberOfRows, permuations)
 
     return result
 end
 
-_sparseMatrix.__add = function (left, right)
-    if left._dimensions[1] ~= right._dimensions[1] or left._dimensions[2] ~= right._dimensions[2] then
-        error("Attempting to add sparse matrices of different sizes.")
-    end
-    for k, v in pairs(left) do
+local _linearlyIndexedSparseMatrixSparsify = function (matrix, tol)
+    tol = tol or 0
+
+    for k, v in pairs(matrix) do
         if type(k) == "number" then
-            local val = right[k]
-            if type(val) == "number" then
-                left[k] = v + val
+            if v < tol then
+                matrix[k] = nil
             end
         end
     end
+
+    return matrix
 end
 
-_sparseMatrix.__sub = function (left, right)
-    if left._dimensions[1] ~= right._dimensions[1] or left._dimensions[2] ~= right._dimensions[2] then
-        error("Attempting to add sparse matrices of different sizes.")
-    end
-    for k, v in pairs(left) do
-        if type(k) == "number" then
-            local val = right[k]
-            if type(val) == "number" then
-                left[k] = v - val
-            end
+local _sparseVector = {}
+
+local _sparseVectorFromArray = function (array)
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {})
+
+    rawset(result, "length", 0)
+
+    for i = 1, #array do
+        if array[i] ~= 0 then
+            result[i] = array[i]
+            result.keys[result.keys.length + 1] = i
         end
     end
+
+    return result
 end
 
-_sparseMatrix.__mul = function (left, right)
-    if left._dimensions[2] ~= right._dimensions[1] then
-        error("Attempting to multiply incompatible sparse matrices.")
+local _sparseVectorFromNumericArray = function (array, tol)
+    tol = tol or 0
+
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {})
+
+    rawset(result, "length", #array)
+
+    for i = 1, #array do
+        if math.abs(array[i]) >= tol then
+            result[i] = array[i]
+            result.keys[#result.keys + 1] = i
+        end
     end
 
+    return result
+end
+
+local _sparseVectorCopy = function (vector)
+    local copy = setmetatable({}, _sparseVector)
+
+    rawset(copy, "keys", {})
+
+    rawset(copy, "length", vector.length)
+
+    for k in vector.keys do
+        copy.keys[#copy.keys + 1] = k
+    end
+
+    return copy
+end
+
+local _sparseStandardBasisVector = function (n, m)
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {m})
+
+    rawset(result, "length", n)
+
+    result[m] = 1
+
+    return result
+end
+
+local _sparseZeroVector = function (n)
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {})
+
+    rawset(result, "length", n)
+
+    return result
+end
+
+local _sparseRandomVector = function (n, a, b, tol)
+    tol = tol or 0
+
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {})
+
+    rawset(result, "length", n)
+
+    for i = 1, n do
+        local val = (b - a) * (math.random()) + a
+        if val >= tol then
+            result[i] = val
+            result.keys[#result.keys + 1] = i
+        end
+    end
+
+    return result
+end
+
+local _sparseOnesVector = function (n)
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "keys", {})
+
+    rawset(result, "length", n)
+
+    for i = 1, n do
+        result[i] = 1
+        result.keys[#result.keys + 1] = i
+    end
+
+    return result
+end
+
+local _keyUnion = function (left, right)
+    local j = 1
+
+    if #left < #right then
+        left, right = right, left
+    end
+
+    local keys = {}
+
+    local index = 1
+
+    for i = 1, #left do
+        local val1 = left[i]
+        local val2 = right[j]
+
+        while val2 and val1 > val2 do
+            keys[index] = val2
+            index = index + 1
+            j = j + 1
+            val2 = right[j]
+        end
+        if val1 == val2 then
+            keys[index] = val1
+            index = index + 1
+            j = j + 1
+        else
+            keys[index] = val1
+            index = index + 1
+        end
+    end
+
+    return keys
+end
+
+local _sparseVectorSwap = function (vector, n, m)
+    vector[n], vector[m] = vector[m], vector[n]
+
+    return vector
+end
+
+local _sparseMatrix = {}
+
+local _sparseMatrixFromArrayOfArrays = function (ArrayOfArrays)
     local result = setmetatable({}, _sparseMatrix)
 
-    rawset(result, "_dimensions", {left._dimensions[1], right._dimensions[2]})
+    rawset(result, "dimensions", {#ArrayOfArrays, #ArrayOfArrays[1]})
 
-    for k, v in pairs(left) do
-        if type(k) == "number" then
-            local columnNumber = k % left._dimensions[2]
-            if columnNumber == 0 then
-                columnNumber = left._dimensions[2]
-            end
-            local rowNumber = (k - columnNumber) / left._dimensions[2]
-            local rowConstant = right._dimensions[2] * (columnNumber - 1)
-            local rowConstant2 = right._dimensions[2] * rowNumber
-            for i = 1, right._dimensions[2] do
-                local val1 = result[rowConstant2 + i]
-                local val2 = right[rowConstant + i]
-                if type(val1) == "number" and val2 ~= nil then
-                    val1 = val1 + v * right[rowConstant + i]
-                    result[rowConstant2 + i] = val1
-                elseif val2 ~= nil then
-                    result[rowConstant2 + i] = v * right[rowConstant + i]
-                end
-            end
+    rawset(result, "keys", {})
+
+    for i = 1, #ArrayOfArrays do
+        local row = _sparseVectorFromArray(ArrayOfArrays[i])
+        if #row.keys ~= 0 then
+            result[i] = row
+            result.keys[#result.keys+1] = i
         end
     end
 
     return result
 end
 
-_sparseMatrix.__tostring = function (matrix)
-    local result = "{"
+local _sparseMatrixIdentity = function (n)
+    local result = setmetatable({}, _sparseMatrix)
 
-    local numberOfRows = matrix._dimensions[1]
-    local numberOfColumns = matrix._dimensions[2]
+    rawset(result, "dimensions", {n, n})
 
-    for i = 1, numberOfRows - 1 do
-        result = result .. "{"
-        for j = 1, numberOfColumns - 1 do
-            local val = matrix[numberOfColumns * (i - 1) + j] or 0
-            result = result .. tostring(val) .. ","
+    rawset(result, "keys", {})
+
+    for i = 1, n do
+        result[i] = _sparseStandardBasisVector(n, i)
+        result.keys[#result.keys+1] = i
+    end
+
+    return result
+end
+
+local _sparseMatrixRowPermute = function (matrix, permuations)
+    for n, m in ipairs(permuations) do
+        matrix[n], matrix[m] = matrix[m], matrix[n]
+    end
+
+    local keys = {}
+
+    for k, v in ipairs(matrix) do
+        keys[#keys+1] = k
+    end
+
+    matrix.keys = keys
+
+    return matrix
+end
+
+local _sparseLeftPermutationMatrix = function (n, permuations)
+    local result = _sparseMatrixIdentity(n)
+
+    return _sparseMatrixRowPermute(result, permuations)
+end
+
+local _sparseMatrixLU = function (matrix)
+    
+end
+
+local _sparseMatrixColumn = function (matrix, n)
+    local result = setmetatable({}, _sparseVector)
+
+    local keys = {}
+
+    rawset(result, "length", matrix.dimensions[1])
+
+    for k, i in ipairs(matrix.keys) do
+        result[i] = matrix[i][n]
+        keys[#keys+1] = i
+    end
+
+    rawset(result, "keys", keys)
+
+    return result
+end
+
+local _sparseMatrixColumnKeys = function (matrix)
+    local keys = {}
+
+    for k, i in ipairs(matrix.keys) do
+        keys = _keyUnion(keys, matrix[i].keys)
+    end
+
+    return keys
+end
+
+local _sparseMatrixFlatten = function (matrix)
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
+
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
+
+    rawset(result, "dimensions", {numberOfRows, numberOfColumns})
+
+    for k, i in ipairs(matrix.keys) do
+        local row = matrix[i]
+        local rowConstant = numberOfColumns * (i - 1)
+        for kk, ii in ipairs(row.keys) do
+            result[rowConstant + ii] = row[ii]
         end
-        local val = matrix[numberOfColumns * (i - 1) + numberOfColumns] or 0
-        result = result .. tostring(val) .. "},"
     end
 
-    result = result .. "{"
-    for j = 1, numberOfColumns - 1 do
-        local val = matrix[numberOfColumns * (numberOfRows - 1) + j] or 0
-        result = result .. tostring(val) .. ","
-    end
-    local val = matrix[numberOfColumns * (numberOfRows - 1) + numberOfColumns] or 0
-    result = result .. tostring(val) .. "}"
+    return result
+end
 
-    result = result .. "}"
+local _sparseMatrixUnFlatten = function (matrix)
+    local result = setmetatable({}, _sparseMatrix)
+
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
+
+    rawset(result, "dimensions", {numberOfRows, numberOfColumns})
+
+    local keys = {}
+
+    local rowNumber = 0
+
+    for k, v in pairs(matrix) do
+        if type(k) == "number" then
+            local columnNumber = k % numberOfColumns
+            if columnNumber == 0 then
+                columnNumber = numberOfColumns
+            end
+            local tempRowNumber = math.floor((k - columnNumber) / numberOfColumns + 1.1)
+            if tempRowNumber > rowNumber then
+                local row = _sparseZeroVector(numberOfColumns)
+                row[columnNumber] = v
+                row.keys[#row.keys+1] = columnNumber
+                result[tempRowNumber] = row
+                keys[#keys+1] = tempRowNumber
+                rowNumber = tempRowNumber
+            else
+                local row = result[rowNumber]
+                row[columnNumber] = v
+                row.keys[#row.keys+1] = columnNumber
+                keys[#keys+1] = rowNumber
+            end
+        end
+    end
+
+    rawset(result, "keys", keys)
 
     return result
 end
@@ -480,7 +696,7 @@ local _matrix = {}
 local _matrixFromTableOfTables = function (tableOfTables)
     local result = setmetatable(tableOfTables, _matrix)
 
-    rawset(result, "_dimensions", {#tableOfTables,#tableOfTables[1]})
+    rawset(result, "dimensions", {#tableOfTables,#tableOfTables[1]})
 
     return result
 end
@@ -529,8 +745,337 @@ local _matrixZero = function (n, m)
     return _matrixFromTableOfTables(result)
 end
 
+_sparseVector.__add = function (left, right)
+    if left.length ~= right.length then
+        error("Cannot add sparse vectors of unequal length.", 2)
+    end
+
+    local keys = _keyUnion(left.keys, right.keys)
+
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "length", left.length)
+
+    local newKeys = {}
+
+    for k, i in ipairs(keys) do
+        local val1 = left[i]
+        local val2 = right[i]
+        if val1 and val2 then
+            local val3 = val1 + val2
+            if val3 == 0 then
+                result[i] = nil
+            else
+                result[i] = val3
+                newKeys[#newKeys + 1] = i
+            end
+        elseif val2 then
+            result[i] = val2
+            newKeys[#newKeys + 1] = i
+        else
+            result[i] = val1
+            newKeys[#newKeys + 1] = i
+        end
+    end
+
+    result.keys = newKeys
+
+    return result
+end
+
+_sparseVector.__sub = function (left, right)
+    if left.length ~= right.length then
+        error("Cannot add sparse vectors of unequal length.", 2)
+    end
+
+    local keys = _keyUnion(left.keys, right.keys)
+
+    local result = setmetatable({}, _sparseVector)
+
+    rawset(result, "length", left.length)
+
+    local newKeys = {}
+
+    for k, i in ipairs(keys) do
+        local val1 = left[i]
+        local val2 = right[i]
+        if val1 and val2 then
+            local val3 = val1 - val2
+            if val3 == 0 then
+                result[i] = nil
+            else
+                result[i] = val3
+                newKeys[#newKeys + 1] = i
+            end
+        elseif val2 then
+            result[i] = -val2
+            newKeys[#newKeys + 1] = i
+        else
+            result[i] = val1
+            newKeys[#newKeys + 1] = i
+        end
+    end
+
+    result.keys = newKeys
+
+    return result
+end
+
+_sparseVector.__unm = function (vector)
+    local copy = _sparseVectorCopy(vector)
+
+    for k, i in ipairs(copy.keys) do
+        copy[i] = -copy[i]
+    end
+
+    return copy
+end
+
+_sparseVector.__mul = function (left, right)
+    if left.length ~= right.length then
+        error("Cannot take inner product of sparse vectors of unequal length.", 2)
+    end
+
+    local keys = _keyUnion(left.keys, right.keys)
+
+    local result = 0
+
+    for k, i in ipairs(keys) do
+        local val1 = left[i]
+        local val2 = right[i]
+        if val1 and val2 then
+            result = result + val1 * val2
+        end
+    end
+
+    return result
+end
+
+_sparseVector.__tostring = function (vector)
+    local result = "{"
+
+    local length = vector.length
+
+    for i = 1, length - 1 do
+        local val = vector[i]
+        if val then
+            result = result .. val .. ","
+        else
+            result = result .. 0 .. ","
+        end
+    end
+
+    local val = vector[length]
+    if val then
+        result = result .. val
+    else
+        result = result .. 0
+    end
+
+    result = result .. "}"
+
+    return result
+end
+
+_sparseMatrix.__add = function (left, right)
+    if left.dimensions[1] ~= right.dimensions[1] and left.dimensions[2] ~= right.dimensions[2] then
+        error("Cannot add sparse matrices of unequal dimensions.", 2)
+    end
+
+    local keys = _keyUnion(left.keys, right.keys)
+
+    local result = setmetatable({}, _sparseMatrix)
+
+    rawset(result, "dimensions", {left.dimensions[1], left.dimensions[2]})
+
+    local newKeys = {}
+
+    for k, i in ipairs(keys) do
+        local val1 = left[i]
+        local val2 = right[i]
+        if val1 and val2 then
+            local val3 = val1 + val2
+            if val3 == 0 then
+                result[i] = nil
+            else
+                result[i] = val3
+                newKeys[#newKeys + 1] = i
+            end
+        elseif val2 then
+            result[i] = val2
+            newKeys[#newKeys + 1] = i
+        else
+            result[i] = val1
+            newKeys[#newKeys + 1] = i
+        end
+    end
+
+    result.keys = newKeys
+
+    return result
+end
+
+_sparseMatrix.__sub = function (left, right)
+    if left.dimensions[1] ~= right.dimensions[1] and left.dimensions[2] ~= right.dimensions[2] then
+        error("Cannot add sparse matrices of unequal dimensions.", 2)
+    end
+
+    local keys = _keyUnion(left.keys, right.keys)
+
+    local result = setmetatable({}, _sparseMatrix)
+
+    rawset(result, "dimensions", {left.dimensions[1], left.dimensions[2]})
+
+    local newKeys = {}
+
+    for k, i in ipairs(keys) do
+        local val1 = left[i]
+        local val2 = right[i]
+        if val1 and val2 then
+            local val3 = val1 - val2
+            if val3 == 0 then
+                result[i] = nil
+            else
+                result[i] = val3
+                newKeys[#newKeys + 1] = i
+            end
+        elseif val2 then
+            result[i] = -val2
+            newKeys[#newKeys + 1] = i
+        else
+            result[i] = val1
+            newKeys[#newKeys + 1] = i
+        end
+    end
+
+    result.keys = newKeys
+
+    return result
+end
+
+_sparseMatrix.__mul = function (left, right)
+    local liLeft = _sparseMatrixFlatten(left)
+    local liRight = _sparseMatrixFlatten(right)
+
+    local result = _sparseMatrixUnFlatten(liLeft * liRight)
+
+    return result
+end
+
+_sparseMatrix.__tostring = function (matrix)
+    local result = "{"
+
+    local length = matrix.dimensions[1]
+    local width = matrix.dimensions[2]
+
+    for i = 1, length - 1 do
+        local val = matrix[i]
+        if val then
+            result = result .. tostring(val) .. ","
+        else
+            result = result .. tostring(_sparseZeroVector(width)) .. ","
+        end
+    end
+
+    local val = matrix[length]
+    if val then
+        result = result .. tostring(val)
+    else
+        result = result .. tostring(_sparseZeroVector(width))
+    end
+
+    result = result .. "}"
+
+    return result
+end
+
+_linearlyIndexedSparseMatrix.__add = function (left, right)
+    if left.dimensions[1] ~= right.dimensions[1] or left.dimensions[2] ~= right.dimensions[2] then
+        error("Attempting to add sparse matrices of different sizes.")
+    end
+
+    local inflatedLeft = _sparseMatrixUnFlatten(left)
+    local inflatedRight = _sparseMatrixUnFlatten(right)
+
+    return _sparseMatrixFlatten(inflatedLeft + inflatedRight)
+end
+
+_linearlyIndexedSparseMatrix.__sub = function (left, right)
+    if left.dimensions[1] ~= right.dimensions[1] or left.dimensions[2] ~= right.dimensions[2] then
+        error("Attempting to add sparse matrices of different sizes.")
+    end
+
+    local inflatedLeft = _sparseMatrixUnFlatten(left)
+    local inflatedRight = _sparseMatrixUnFlatten(right)
+
+    return _sparseMatrixFlatten(inflatedLeft - inflatedRight)
+end
+
+_linearlyIndexedSparseMatrix.__mul = function (left, right)
+    if left.dimensions[2] ~= right.dimensions[1] then
+        error("Attempting to multiply incompatible sparse matrices.")
+    end
+
+    local result = setmetatable({}, _linearlyIndexedSparseMatrix)
+
+    rawset(result, "dimensions", {left.dimensions[1], right.dimensions[2]})
+
+    for k, v in pairs(left) do
+        if type(k) == "number" then
+            local columnNumber = k % left.dimensions[2]
+            if columnNumber == 0 then
+                columnNumber = left.dimensions[2]
+            end
+            local rowNumber = (k - columnNumber) / left.dimensions[2]
+            local rowConstant = right.dimensions[2] * (columnNumber - 1)
+            local rowConstant2 = right.dimensions[2] * rowNumber
+            for i = 1, right.dimensions[2] do
+                local val1 = result[rowConstant2 + i]
+                local val2 = right[rowConstant + i]
+                if type(val1) == "number" and val2 ~= nil then
+                    val1 = val1 + v * right[rowConstant + i]
+                    result[rowConstant2 + i] = val1
+                elseif val2 ~= nil then
+                    result[rowConstant2 + i] = v * right[rowConstant + i]
+                end
+            end
+        end
+    end
+
+    return result
+end
+
+_linearlyIndexedSparseMatrix.__tostring = function (matrix)
+    local result = "{"
+
+    local numberOfRows = matrix.dimensions[1]
+    local numberOfColumns = matrix.dimensions[2]
+
+    for i = 1, numberOfRows - 1 do
+        result = result .. "{"
+        for j = 1, numberOfColumns - 1 do
+            local val = matrix[numberOfColumns * (i - 1) + j] or 0
+            result = result .. tostring(val) .. ","
+        end
+        local val = matrix[numberOfColumns * (i - 1) + numberOfColumns] or 0
+        result = result .. tostring(val) .. "},"
+    end
+
+    result = result .. "{"
+    for j = 1, numberOfColumns - 1 do
+        local val = matrix[numberOfColumns * (numberOfRows - 1) + j] or 0
+        result = result .. tostring(val) .. ","
+    end
+    local val = matrix[numberOfColumns * (numberOfRows - 1) + numberOfColumns] or 0
+    result = result .. tostring(val) .. "}"
+
+    result = result .. "}"
+
+    return result
+end
+
 _matrix.__add = function (left, right)
-    if left._dimensions[1] ~= right._dimensions[1] or left._dimensions[2] ~= right._dimensions[2] then
+    if left.dimensions[1] ~= right.dimensions[1] or left.dimensions[2] ~= right.dimensions[2] then
         error("Attempting to add matrices of different sizes.")
     end
 
@@ -547,7 +1092,7 @@ _matrix.__add = function (left, right)
 end
 
 _matrix.__sub = function (left, right)
-    if left._dimensions[1] ~= right._dimensions[1] or left._dimensions[2] ~= right._dimensions[2] then
+    if left.dimensions[1] ~= right.dimensions[1] or left.dimensions[2] ~= right.dimensions[2] then
         error("Attempting to add matrices of different sizes.")
     end
 
@@ -563,36 +1108,86 @@ _matrix.__sub = function (left, right)
     return _matrixFromTableOfTables(result)
 end
 
-matrixAlgebra.sparseMatrix = {}
+matrixAlgebra.sparseVector = {}
 
-matrixAlgebra.sparseMatrix.new = function (tableOfTables)
-    return _sparseMatrixFromTableOfTables(tableOfTables)
+matrixAlgebra.sparseVector.new = function (array)
+    return _sparseVectorFromArray(array)
 end
 
-matrixAlgebra.sparseMatrix.newNumeric = function (tableOfTables, tol)
-    return _sparseMatrixFromNumericTableOfTables(tableOfTables, tol)
+matrixAlgebra.sparseVector.newNumeric = function (array, tol)
+    return _sparseVectorFromNumericArray(array, tol)
+end
+
+matrixAlgebra.sparseVector.ones = function (n)
+    return _sparseOnesVector(n)
+end
+
+matrixAlgebra.sparseVector.zero = function (n)
+    return _sparseZeroVector(n)
+end
+
+matrixAlgebra.sparseVector.random = function (n, a, b, tol)
+    return _sparseRandomVector(n, a, b, tol)
+end
+
+matrixAlgebra.sparseMatrix = {}
+
+matrixAlgebra.sparseMatrix.new = function (ArrayOfArrays)
+    return _sparseMatrixFromArrayOfArrays(ArrayOfArrays)
 end
 
 matrixAlgebra.sparseMatrix.identity = function (n)
-    return _sparseIdentity(n)
+    return _sparseMatrixIdentity(n)
 end
 
-matrixAlgebra.sparseMatrix.zero = function (n, m)
-    return _sparseZero(n, m)
+matrixAlgebra.sparseMatrix.flatten = function (matrix)
+    return _sparseMatrixFlatten(matrix)
 end
 
-matrixAlgebra.sparseMatrix.random = function (n, m, a, b, tol)
-    return _sparseRandom(n, m, a, b, tol)
+matrixAlgebra.liSparseMatrix = {}
+
+matrixAlgebra.liSparseMatrix.new = function (tableOfTables)
+    return _linearlyIndexedSparseMatrixFromTableOfTables(tableOfTables)
 end
 
-matrixAlgebra.sparseMatrix.lu = function (input)
-    local matrix = _sparseCopy(input)
-    return _sparseLU(matrix)
+matrixAlgebra.liSparseMatrix.newNumeric = function (tableOfTables, tol)
+    return _linearlyIndexedSparseMatrixFromNumericTableOfTables(tableOfTables, tol)
 end
 
-matrixAlgebra.sparseMatrix.transpose = function (input)
-    local matrix = _sparseCopy(input)
-    return _sparseTranspose(matrix)
+matrixAlgebra.liSparseMatrix.identity = function (n)
+    return _linearlyIndexedSparseIdentity(n)
+end
+
+matrixAlgebra.liSparseMatrix.zero = function (n, m)
+    return _linearlyIndexedSparseZero(n, m)
+end
+
+matrixAlgebra.liSparseMatrix.random = function (n, m, a, b, tol)
+    return _linearlyIndexedSparseRandom(n, m, a, b, tol)
+end
+
+matrixAlgebra.liSparseMatrix.lu = function (input)
+    local matrix = _linearlyIndexedSparseCopy(input)
+    return _linearlyIndexedSparseLU(matrix)
+end
+
+matrixAlgebra.liSparseMatrix.inverse = function (input)
+    local matrix = _linearlyIndexedSparseCopy(input)
+    return _linearlyIndexedSparseInverse(matrix)
+end
+
+matrixAlgebra.liSparseMatrix.transpose = function (input)
+    local matrix = _linearlyIndexedSparseCopy(input)
+    return _linearlyIndexedSparseTranspose(matrix)
+end
+
+matrixAlgebra.liSparseMatrix.sparsify = function (input, tol)
+    local matrix = _linearlyIndexedSparseCopy(input)
+    return _linearlyIndexedSparseMatrixSparsify(matrix, tol)
+end
+
+matrixAlgebra.liSparseMatrix.unflatten = function (matrix)
+    return _sparseMatrixUnFlatten(matrix)
 end
 
 matrixAlgebra.matrix = {}
